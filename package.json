@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "photo-sharing-app",
   "main": "server.js",
+  "engines": {
+    "node": "^5.9.1"
+  },
   "scripts": {
     "test": "npm test",
     "start": "node server.js"
