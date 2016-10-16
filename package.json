@@ -1,0 +1,16 @@
+{
+  "name": "photo-share",
+  "version": "1.0.0",
+  "description": "photo-sharing-app",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm test",
+    "start": "node server.js"
+  },
+  "author": "Wes Young",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0"
+  }
+}
