@@ -1,10 +1,45 @@
 var app = angular.module('photoShare', ['ui.router']);
 
-app.factory('posts', [function(){
-  var postsObject = {
+app.factory('posts', ['$http', function($http){
+  var o = {
     posts: []
   }
-  return postsObject;
+
+  o.getAll = function(){
+    return $http.get('/photos').success(function(data){
+      angular.copy(data, o.posts);
+    });
+  };
+
+  o.create = function(post){
+    return $http.post('/photos', post).success(function(data){
+      o.posts.push(data);
+    });
+  };
+
+  o.upvote = function(post){
+    return $http.put('/photos/' + post._id + '/like').success(function(data){
+      post.likes += 1;
+    });
+  };
+
+  o.get = function(id){
+    return $http.get('/photos/' + id).then(function(res){
+      return res.data;
+    });
+  };
+
+  o.addComment = function(id, comment){
+    return $http.post('/photos/' + id + '/comments', comment);
+  };
+
+  o.upvoteComment = function(post, comment){
+    return $http.put('/photos/' + post._id + /comments/ + comment._id + '/upvote').success(function(data){
+      comment.upvotes += 1;
+    });
+  };
+
+  return o;
 }]);
 
 app.config(['$stateProvider', '$urlRouterProvider',
@@ -14,12 +49,22 @@ app.config(['$stateProvider', '$urlRouterProvider',
       .state('home', {
         url: '/home',
         templateUrl: '/home.html',
-        controller: 'MainCtrl'
+        controller: 'MainCtrl',
+        resolve: {
+          postPromise: ['posts', function(posts){
+            return posts.getAll();
+          }]
+        }
       })
       .state('posts', {
-        url: '/posts/{id}',
+        url: '/photos/{id}',
         templateUrl: '/posts.html',
-        controller: 'PostsCtrl'
+        controller: 'PostsCtrl',
+        resolve: {
+          post: ['$stateParams', 'posts', function($stateParams, posts){
+            return posts.get($stateParams.id);
+          }]
+        }
       })
 
     $urlRouterProvider.otherwise('home');
@@ -35,30 +80,38 @@ app.controller('MainCtrl', ['$scope', 'posts', function($scope, posts){
     if(!$scope.link || $scope.link === ''){
       return;
     }
-    $scope.posts.push({title: $scope.title, link: $scope.link, likes: 0, comments: [], date: new Date()});
+    posts.create({
+      title: $scope.title,
+      link: $scope.link
+    })
     $scope.title = '';
     $scope.link = '';
   };
 
   $scope.incrementLikes = function(post){
-    post.likes += 1;
+    posts.upvote(post);
   };
 
 }]);
 
-app.controller('PostsCtrl', ['$scope', "$stateParams", 'posts', function($scope, $stateParams, posts){
-    $scope.post = posts.posts[$stateParams.id];
+app.controller('PostsCtrl', ['$scope', "posts", 'post', function($scope, posts, post){
+    $scope.post = post;
 
     $scope.addComment = function(){
       if($scope.body === ''){
         return;
       }
-      $scope.post.comments.push({
+      posts.addComment(post._id, {
         body: $scope.body,
-        author: 'user',
-        likes: 0
+        author: 'user'
+      }).success(function(comment){
+        $scope.post.comments.push(comment);
       });
       $scope.body = '';
+    };
+
+    $scope.incrementUpvotes = function(comment){
+      posts.upvoteComment(post, comment);
     };
 
 }])

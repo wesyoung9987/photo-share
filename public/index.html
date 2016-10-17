@@ -59,7 +59,7 @@
                 Likes: {{post.likes}} <span class="glyphicon glyphicon-thumbs-up" ng-click="incrementLikes(post)"></span>
               </span>
               <span>
-                <a href="#/posts/{{$index}}">Comments</a>
+                <a href="#/photos/{{post._id}}">Comments</a>
               </span>
             </div>
           </div>
@@ -88,8 +88,8 @@
         </div>
 
         <div ng-repeat="comment in post.comments | orderBy: '-upvotes'">
-          <span class="glyphicon glyphicon-thumbs-up" ng-click="incrementLikes(comment)"></span>
-          {{comment.likes}} - by {{comment.author}}
+          <span class="glyphicon glyphicon-thumbs-up" ng-click="incrementUpvotes(comment)"></span>
+          {{comment.upvotes}} - by {{comment.author}}
           <span style="font-size:20px; margin-left:10px;">
             {{comment.body}}
           </span>
